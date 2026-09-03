@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f5f5f7" />
+  <title>ハガキング｜ハガキ並べアプリ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f5f5f7;
+      --surface:#ffffff;
+      --surface-2:#f9f9fb;
+      --text:#1d1d1f;
+      --muted:#6e6e73;
+      --line:rgba(0,0,0,.09);
+      --line-strong:rgba(0,0,0,.16);
+      --accent:#0071e3;
+      --accent-soft:#e8f2ff;
+      --ok:#248a3d;
+      --warn:#b25000;
+      --danger:#d70015;
+      --sheet:#fbfcff;
+      --sheet-line:#aab8cf;
+      --vertical:#007aff;
+      --horizontal:#5ac8fa;
+      --shadow:0 8px 28px rgba(0,0,0,.07);
+      --r-xl:22px;
+      --r-lg:16px;
+      --r-md:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue","Noto Sans JP",Meiryo,sans-serif}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .material-symbols-rounded{font-size:21px;line-height:1;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+    .app{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+
+    header{
+      position:sticky;top:0;z-index:30;height:64px;display:flex;align-items:center;gap:14px;
+      padding:0 20px;border-bottom:1px solid var(--line);background:rgba(250,250,252,.86);
+      backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px)
+    }
+    .brand{display:flex;align-items:center;gap:11px;min-width:220px}
+    .brand-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--text);color:#fff;font-size:17px;font-weight:750;letter-spacing:-.04em}
+    .brand h1{font-size:18px;line-height:1.1;margin:0;font-weight:700;letter-spacing:-.02em}
+    .brand small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+    .header-center{flex:1;min-width:0;text-align:center;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .header-center b{color:var(--text);font-weight:650}
+    .icon-button{width:38px;height:38px;border:0;border-radius:50%;display:grid;place-items:center;background:transparent;color:var(--text);transition:.15s ease}
+    .icon-button:hover{background:rgba(0,0,0,.055)}
+    .icon-button:active{transform:scale(.96)}
+
+    main{display:grid;grid-template-columns:330px minmax(0,1fr);min-height:0}
+    .controls-pane{border-right:1px solid var(--line);padding:20px 16px 24px;overflow:auto;max-height:calc(100vh - 64px);background:rgba(255,255,255,.46)}
+    .workspace{padding:22px;overflow:auto;max-height:calc(100vh - 64px)}
+
+    .control-group{margin-bottom:24px}
+    .control-group h2{font-size:13px;margin:0 0 10px;padding:0 4px;color:var(--text);font-weight:700;letter-spacing:-.01em}
+    .control-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.02)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid1{display:grid;gap:10px}
+    label{display:grid;gap:6px;font-size:11px;color:var(--muted)}
+    input,select{width:100%;border:1px solid var(--line-strong);background:#fff;color:var(--text);border-radius:10px;padding:9px 10px;outline:none;min-height:38px}
+    input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,113,227,.12)}
+    .subtle-note{font-size:10px;line-height:1.55;color:var(--muted);margin:10px 3px 0}
+
+    .column-card{border-top:1px solid var(--line);padding:14px 0 2px}
+    .column-card:first-child{border-top:0;padding-top:0}
+    .column-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;font-weight:700}
+    .column-dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+    .column-count{margin-left:auto;color:var(--muted);font-weight:500;font-size:10px}
+    .column-total-row{display:grid;grid-template-columns:1fr 112px;align-items:center;gap:12px;margin:0 0 12px;padding:10px 11px;background:var(--surface-2);border-radius:12px}
+    .column-total-copy strong{display:block;font-size:11px;color:var(--text);margin-bottom:3px}.column-total-copy span{display:block;font-size:9px;line-height:1.45;color:var(--muted)}
+    .count-stepper{display:grid;grid-template-columns:30px minmax(42px,1fr) 30px;align-items:center;border:1px solid var(--line-strong);border-radius:10px;background:#fff;overflow:hidden;height:38px}
+    .count-stepper input{border:0;border-radius:0;min-height:36px;height:36px;padding:0 2px;text-align:center;font-weight:700;box-shadow:none!important;-moz-appearance:textfield}
+    .count-stepper input::-webkit-outer-spin-button,.count-stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .count-step{height:100%;border:0;background:#fff;color:var(--text);font-size:18px;line-height:1;display:grid;place-items:center;padding:0;transition:.12s}.count-step:hover{background:#f0f0f3}.count-step:active{background:#e6e6ea}
+    .control-subtitle{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.02em;margin:2px 2px 7px}
+    .locked-label{display:inline-flex;align-items:center;gap:3px}
+    .locked-label .material-symbols-rounded{font-size:12px}
+
+    .workspace-top{display:flex;align-items:flex-end;gap:14px;margin:0 auto 14px;max-width:1160px}
+    .workspace-title{min-width:0;flex:1}
+    .workspace-title h2{font-size:22px;margin:0 0 4px;letter-spacing:-.03em}
+    .workspace-title p{margin:0;color:var(--muted);font-size:11px}
+    .status-inline{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+    .status-chip{border:1px solid var(--line);background:rgba(255,255,255,.82);border-radius:999px;padding:7px 10px;color:var(--muted);font-size:10px;white-space:nowrap}
+    .status-chip b{color:var(--text)}
+    .status-chip.ok b{color:var(--ok)}
+    .status-chip.warn b{color:var(--warn)}
+
+    .result-layout{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:minmax(500px,1fr) 250px;gap:16px;align-items:start}
+    .preview-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-xl);padding:16px;box-shadow:var(--shadow)}
+    .preview-toolbar{height:34px;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .preview-toolbar strong{font-size:12px}
+    .preview-toolbar span{font-size:10px;color:var(--muted);margin-left:auto}
+    .sheet-wrap{width:100%;display:grid;place-items:center;background:var(--surface-2);border-radius:16px;padding:14px;min-height:650px;overflow:auto}
+    #sheetSvg{width:auto;height:min(77vh,1100px);max-width:100%;aspect-ratio:788/1837;display:block;filter:drop-shadow(0 12px 22px rgba(0,0,0,.12));user-select:none;-webkit-user-select:none}
+    #sheetSvg .draggable-card{cursor:grab;touch-action:none}
+    #sheetSvg .dragging-card{cursor:grabbing;opacity:.45}
+
+    .info-card{background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+    .info-card h3{font-size:12px;margin:0 0 4px}
+    .info-card .description{font-size:10px;line-height:1.6;color:var(--muted);margin:0 0 11px}
+    .gap-list{display:grid;gap:0;border-top:1px solid var(--line)}
+    .gap-row{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:8px;min-height:42px;border-bottom:1px solid var(--line);font-size:11px}
+    .gap-row .col{font-weight:700}.gap-row .sequence{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gap-row .gap{font-weight:700}
+    .drag-help{margin-top:12px;padding:10px;background:var(--surface-2);border-radius:10px;color:var(--muted);font-size:10px;line-height:1.6}
+    .drag-help b{color:var(--text)}
+    .warning-box{display:none;margin-top:10px;padding:10px;border-radius:10px;background:#fff2f2;color:var(--danger);font-size:10px;line-height:1.55}.warning-box.show{display:block}
+
+    .modal-backdrop{position:fixed;inset:0;z-index:90;display:none;place-items:center;padding:18px;background:rgba(0,0,0,.28);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+    .modal-backdrop.show{display:grid}
+    .modal{width:min(720px,100%);max-height:min(84vh,820px);overflow:hidden;background:rgba(250,250,252,.98);border:1px solid rgba(255,255,255,.6);border-radius:24px;box-shadow:0 28px 80px rgba(0,0,0,.22);display:grid;grid-template-rows:auto 1fr}
+    .modal-head{height:58px;display:flex;align-items:center;padding:0 14px 0 20px;border-bottom:1px solid var(--line)}
+    .modal-head h2{font-size:16px;margin:0}.modal-head button{margin-left:auto}
+    .modal-body{overflow:auto;padding:18px 20px 22px}
+    .settings-section{padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+    .settings-section:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+    .settings-section h3{font-size:12px;margin:0 0 10px}
+    .row{display:flex;gap:8px;align-items:end}.row>*{min-width:0}.grow{flex:1}
+    .button{border:0;border-radius:10px;min-height:38px;padding:0 13px;background:#e9e9ed;color:var(--text);font-weight:650;font-size:11px;white-space:nowrap}
+    .button:hover{filter:brightness(.98)}
+    .button.primary{background:var(--accent);color:#fff}.button.danger{color:var(--danger)}.button.secondary{background:#fff;border:1px solid var(--line)}
+    .button.icon-only{width:36px;padding:0;display:grid;place-items:center}.button.icon-only .material-symbols-rounded{font-size:18px}
+    .settings-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .settings-toggle{display:flex;align-items:center;gap:10px;font-size:11px}.settings-toggle input{width:17px;height:17px;min-height:0}
+    .saved-list{display:grid;gap:8px;margin-top:10px}
+    .saved-sheet{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 10px 10px 12px}
+    .saved-sheet .name{min-width:0;font-size:11px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .saved-sheet .meta{font-size:9px;color:var(--muted);margin-top:3px}
+    .saved-sheet .tools{display:flex;gap:4px}.saved-sheet .tools .button{min-height:32px;height:32px}
+    .empty{font-size:10px;color:var(--muted);padding:8px 2px}
+    .file-input{display:none}
+
+    .toast{position:fixed;right:18px;bottom:18px;z-index:120;background:rgba(29,29,31,.94);color:#fff;border-radius:12px;padding:10px 13px;font-size:11px;box-shadow:0 12px 30px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translateY(0)}
+
+    @media(max-width:1020px){main{grid-template-columns:300px minmax(0,1fr)}.result-layout{grid-template-columns:1fr}.info-card{display:grid;grid-template-columns:1fr 1fr;gap:14px}.info-card .gap-list{grid-column:1/-1}}
+    @media(max-width:760px){header{position:static}.header-center{display:none}main{grid-template-columns:1fr}.controls-pane,.workspace{max-height:none;overflow:visible}.controls-pane{border-right:0;border-bottom:1px solid var(--line);padding:16px}.workspace{padding:16px}.workspace-top{align-items:flex-start;flex-direction:column}.status-inline{justify-content:flex-start}.result-layout{grid-template-columns:1fr}.sheet-wrap{min-height:430px;padding:8px}#sheetSvg{height:min(72vh,930px)}.info-card{display:block}.modal-body{padding:16px}.row{align-items:stretch;flex-direction:column}.row.actions-inline{flex-direction:row}.brand{min-width:0}}
+    @media print{body{background:#fff}.app header,.controls-pane,.workspace-top,.info-card,.preview-toolbar,.modal-backdrop{display:none!important}main{display:block}.workspace{padding:0;max-height:none}.result-layout{display:block;max-width:none}.preview-card{border:0;box-shadow:none;padding:0}.sheet-wrap{background:#fff;min-height:auto;padding:0}#sheetSvg{width:100%;max-height:98vh}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="brand-mark">H</div>
+      <div><h1>ハガキング</h1><small>ハガキ並べアプリ</small></div>
+    </div>
+    <div class="header-center" id="headerPath"><b>保存フォルダ</b> / 〇〇市 / シート①</div>
+    <button class="icon-button" id="settingsBtn" aria-label="設定を開く" title="設定">
+      <span class="material-symbols-rounded">settings</span>
+    </button>
+  </header>
+
+  <main>
+    <aside class="controls-pane">
+      <section class="control-group">
+        <h2>シート</h2>
+        <div class="control-card">
+          <div class="grid2">
+            <label>ファイル名<input id="fileName" value="〇〇市" placeholder="例：守谷市"></label>
+            <label>シート名<input id="sheetName" value="シート①" placeholder="例：シート①"></label>
+          </div>
+          <div class="grid1" style="margin-top:10px">
+            <label>列数
+              <select id="columnCount">
+                <option value="1">1列（A列）</option>
+                <option value="2">2列（A・B列）</option>
+                <option value="3" selected>3列（A・B・C列）</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="control-group">
+        <h2>各列の設定</h2>
+        <div class="control-card" id="columnControls"></div>
+        <p class="subtle-note">まず各列の「枚数」を指定できます。縦・横の内訳も個別に変更できます。1段目・2段目は最初から表示し、配置後も固定します。</p>
+      </section>
+    </aside>
+
+    <section class="workspace">
+      <div class="workspace-top">
+        <div class="workspace-title">
+          <h2 id="workspaceName">〇〇市 / シート①</h2>
+          <p>788 × 1,837 mm　・　変更内容は自動で再計算されます。</p>
+        </div>
+        <div class="status-inline">
+          <div class="status-chip"><b id="statusCols">3列</b></div>
+          <div class="status-chip" id="totalChip"><b id="statusTotal">10枚</b></div>
+          <div class="status-chip" id="fitChip"><b id="statusFit">配置可能</b></div>
+        </div>
+      </div>
+
+      <div class="result-layout">
+        <div class="preview-card">
+          <div class="preview-toolbar">
+            <strong>配置プレビュー</strong>
+            <span>1・2段目は固定 / 3段目以降をドラッグ</span>
+          </div>
+          <div class="sheet-wrap">
+            <svg id="sheetSvg" viewBox="0 0 788 1837" role="img" aria-label="ハガキ配置プレビュー"></svg>
+          </div>
+        </div>
+
+        <aside class="info-card">
+          <div>
+            <h3>上下の余白</h3>
+            <p class="description">各列のハガキ間を等間隔にした結果です。並べ替えると自動で再計算します。</p>
+          </div>
+          <div class="gap-list" id="gapList"></div>
+          <div class="drag-help"><b>並べ替え</b><br>3段目以降のハガキを上下へドラッグしてください。1段目・2段目は固定です。</div>
+          <div id="warningBox" class="warning-box"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="settingsModal" aria-hidden="true">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-head">
+      <h2 id="settingsTitle">設定</h2>
+      <button class="icon-button" id="closeSettingsBtn" aria-label="設定を閉じる"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    <div class="modal-body">
+      <section class="settings-section">
+        <h3>保存先フォルダ</h3>
+        <div class="row actions-inline">
+          <label class="grow">フォルダ
+            <select id="folderSelect"></select>
+          </label>
+          <button class="button secondary" id="newFolderBtn">新規フォルダ</button>
+          <button class="button secondary" id="renameFolderBtn">名前を変更</button>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3>シート保存</h3>
+        <div class="settings-actions">
+          <button class="button primary" id="saveCurrentBtn">現在のシートを保存</button>
+        </div>
+        <div class="saved-list" id="savedList"></div>
+      </section>
+
+      <section class="settings-section">
+        <h3>表示</h3>
+        <label class="settings-toggle"><input type="checkbox" id="showDims" checked> プレビューに寸法を表示</label>
+      </section>
+
+      <section class="settings-section">
+        <h3>データ</h3>
+        <div class="settings-actions">
+          <button class="button secondary" id="exportAllBtn"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px;margin-right:4px">download</span>全体をCSV書き出し</button>
+          <button class="button secondary" id="importAllBtn"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px;margin-right:4px">upload</span>CSV読み込み</button>
+          <button class="button secondary" id="printBtn"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:-3px;margin-right:4px">print</span>印刷 / PDF</button>
+          <input class="file-input" id="fileInput" type="file" accept=".csv,text/csv">
+        </div>
+        <p class="subtle-note">CSVにはフォルダ、各シート、枚数、並び順、表示設定をまとめて保存します。読み込むと同じ状態を再現します。</p>
+      </section>
+    </div>
+  </section>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const SHEET_W = 788;
+  const SHEET_H = 1837;
+  const SIZE = {
+    V: { label:'縦', w:100, h:180, fill:'#007aff' },
+    H: { label:'横', w:150, h:130, fill:'#5ac8fa' }
+  };
+  const COLS = ['A','B','C'];
+  const STORAGE_KEY = 'hagaking.library.v3';
+  const LEGACY_KEY = 'hagaking.sheets';
+
+  const state = {
+    fileName:'〇〇市', sheetName:'シート①', columnCount:3, showDims:true,
+    columns:{
+      A:{v:2,h:1,first:'V',second:'H',order:null},
+      B:{v:2,h:1,first:'V',second:'H',order:null},
+      C:{v:2,h:2,first:'H',second:'V',order:null}
+    }
+  };
+
+  // 初期化より先に使用される共通関数は、必ずここで定義する。
+  // 以前は loadLibrary() が uid() の定義前に実行され、JavaScript 全体が停止していた。
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const nfmt = n => Number.isFinite(n) ? (Math.round(n*10)/10).toFixed(1).replace(/\.0$/,'') : '—';
+  const clone = obj => JSON.parse(JSON.stringify(obj));
+  let uidSeq = 0;
+  const uid = prefix => `${prefix}_${Date.now().toString(36)}_${(++uidSeq).toString(36)}_${Math.random().toString(36).slice(2,9)}`;
+
+  // ライブラリ本体は、全関数とイベント登録を準備した後に初期化する。
+  // これにより、初期化中に未定義の関数・定数を参照する事故を防ぐ。
+  let library = null;
+  let currentFolderId = null;
+  let currentSheetId = null;
+  let lastResult = null;
+  let dragState = null;
+
+  function toast(msg){
+    const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._id); toast._id=setTimeout(()=>t.classList.remove('show'),1800);
+  }
+
+  function defaultLibrary(){
+    const id=uid('folder');
+    return {version:3,currentFolderId:id,folders:[{id,name:'保存フォルダ',sheets:[]}]};
+  }
+
+  function normalizeImportedState(raw){
+    const s=clone(raw || {});
+    s.fileName = s.fileName || s.municipality || '名称未設定';
+    s.sheetName = s.sheetName || 'シート';
+    s.columnCount = Math.min(3,Math.max(1,Number(s.columnCount)||1));
+    s.showDims = s.showDims !== false;
+    s.columns = s.columns || {};
+    COLS.forEach(c=>{
+      const old=s.columns[c]||{};
+      s.columns[c]={
+        v:Math.max(0,Number(old.v)||0),
+        h:Math.max(0,Number(old.h)||0),
+        first:old.first==='H'?'H':'V',
+        second:old.second==='H'?'H':'V',
+        order:Array.isArray(old.order)?old.order.filter(x=>x==='V'||x==='H'):null
+      };
+    });
+    delete s.municipality;
+    return s;
+  }
+
+  function loadLibrary(){
+    try{
+      const parsed=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+      if(parsed && Array.isArray(parsed.folders) && parsed.folders.length){
+        parsed.folders.forEach(f=>{f.sheets=(f.sheets||[]).map(x=>({...x,state:normalizeImportedState(x.state)}));});
+        return parsed;
+      }
+    }catch(_e){}
+
+    const fresh=defaultLibrary();
+    try{
+      const legacy=JSON.parse(localStorage.getItem(LEGACY_KEY)||'[]');
+      if(Array.isArray(legacy) && legacy.length){
+        fresh.folders[0].sheets=legacy.map(item=>{
+          const s=normalizeImportedState(item.state||{});
+          return {id:uid('sheet'),fileName:s.fileName,sheetName:s.sheetName,updatedAt:item.updatedAt||new Date().toISOString(),state:s};
+        });
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(fresh));
+      }
+    }catch(_e){}
+    return fresh;
+  }
+
+  function persistLibrary(){
+    library.currentFolderId=currentFolderId;
+    try{
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(library));
+      return true;
+    }catch(e){
+      console.warn('ハガキング: ブラウザ保存を利用できません。',e);
+      toast('ブラウザ保存を利用できません。この画面では一時的に保持します。');
+      return false;
+    }
+  }
+
+  function getCurrentFolder(){
+    let folder=library.folders.find(f=>f.id===currentFolderId);
+    if(!folder){folder=library.folders[0];currentFolderId=folder.id;}
+    return folder;
+  }
+
+  function getX(column, orientation, columnCount){
+    const w=SIZE[orientation].w;
+    if(columnCount===1) return orientation==='V' ? 319 : 344;
+    if(columnCount===2){
+      const margin=orientation==='V' ? 180 : 154;
+      return column==='A' ? margin : SHEET_W-margin-w;
+    }
+    if(column==='A') return orientation==='V' ? 100 : 75;
+    if(column==='B') return orientation==='V' ? 344 : 319;
+    const rightMargin=orientation==='V' ? 100 : 75;
+    return SHEET_W-rightMargin-w;
+  }
+
+  function normalizeSelections(col){
+    col.v=Math.max(0,Number(col.v)||0); col.h=Math.max(0,Number(col.h)||0);
+    const total=col.v+col.h;
+    if(total===0){col.order=[];return;}
+    const available=[]; if(col.v>0)available.push('V'); if(col.h>0)available.push('H');
+    if(!available.includes(col.first)) col.first=available[0];
+    if(total>=2){
+      const remain={V:col.v-(col.first==='V'?1:0),H:col.h-(col.first==='H'?1:0)};
+      if(remain[col.second]<=0) col.second=remain.V>0?'V':'H';
+    }
+    col.order = reconcileOrder(col);
+  }
+
+  function defaultSequence(col){
+    const counts={V:col.v,H:col.h}; const seq=[];
+    const take=o=>{if(counts[o]>0){seq.push(o);counts[o]--;}};
+    take(col.first);
+    if(col.v+col.h>=2) take(col.second);
+    while(counts.V>0){seq.push('V');counts.V--;}
+    while(counts.H>0){seq.push('H');counts.H--;}
+    return seq;
+  }
+
+  function reconcileOrder(col){
+    const target=defaultSequence(col);
+    if(!Array.isArray(col.order) || !col.order.length) return target;
+    const total=col.v+col.h;
+    if(col.order.length!==total) return target;
+    const count=o=>col.order.filter(x=>x===o).length;
+    if(count('V')!==col.v || count('H')!==col.h) return target;
+    if(total>0 && col.order[0]!==target[0]) return target;
+    if(total>1 && col.order[1]!==target[1]) return target;
+    return col.order.slice();
+  }
+
+  function calculate(){
+    syncStateFromUI();
+    const active=COLS.slice(0,state.columnCount);
+    const result={columns:{},cards:[],errors:[],total:0,fit:true};
+
+    active.forEach(colName=>{
+      const col=state.columns[colName];
+      normalizeSelections(col);
+      const sequence=col.order.slice();
+      const totalHeight=sequence.reduce((sum,o)=>sum+SIZE[o].h,0);
+      const gap=sequence.length<=1 ? 0 : (SHEET_H-totalHeight)/(sequence.length-1);
+      const fit=totalHeight<=SHEET_H;
+      if(!fit) result.fit=false;
+
+      const firstOrientation=sequence[0];
+      const firstX=firstOrientation ? getX(colName,firstOrientation,state.columnCount) : 0;
+      const columnCenter=firstOrientation ? firstX+SIZE[firstOrientation].w/2 : 0;
+      let y=0;
+      const cards=[];
+      sequence.forEach((o,i)=>{
+        const s=SIZE[o];
+        const x=i===0 ? firstX : columnCenter-s.w/2;
+        const card={column:colName,index:i+1,orientation:o,x,y,w:s.w,h:s.h,gap,columnCenter,locked:i<2};
+        cards.push(card); result.cards.push(card);
+        y += s.h+(i<sequence.length-1?gap:0);
+      });
+      result.columns[colName]={sequence,totalHeight,gap,fit,cards};
+      result.total += sequence.length;
+    });
+
+    lastResult=result;
+    renderAll();
+    return result;
+  }
+
+  function syncStateFromUI(){
+    state.fileName=$('#fileName').value.trim()||'名称未設定';
+    state.sheetName=$('#sheetName').value.trim()||'シート';
+    state.columnCount=Number($('#columnCount').value)||1;
+    state.showDims=$('#showDims').checked;
+    COLS.forEach(c=>{
+      const box=document.querySelector(`[data-col="${c}"]`); if(!box)return;
+      state.columns[c].v=Math.max(0,Number(box.querySelector('.vCount').value)||0);
+      state.columns[c].h=Math.max(0,Number(box.querySelector('.hCount').value)||0);
+      state.columns[c].first=box.querySelector('.first').value;
+      state.columns[c].second=box.querySelector('.second').value;
+    });
+  }
+
+  function syncUIFromState(){
+    $('#fileName').value=state.fileName;
+    $('#sheetName').value=state.sheetName;
+    $('#columnCount').value=String(state.columnCount);
+    $('#showDims').checked=state.showDims!==false;
+    renderColumnControls();
+  }
+
+  function renderColumnControls(){
+    const wrap=$('#columnControls'); wrap.innerHTML='';
+    COLS.slice(0,state.columnCount).forEach(c=>{
+      const col=state.columns[c]; normalizeSelections(col);
+      const total=col.v+col.h;
+      const div=document.createElement('div'); div.className='column-card'; div.dataset.col=c;
+      div.innerHTML=`
+        <div class="column-head"><span class="column-dot"></span>${c}列 <span class="column-count">${total}枚</span></div>
+        <div class="column-total-row">
+          <div class="column-total-copy"><strong>この列の枚数</strong><span>0〜10枚で指定</span></div>
+          <div class="count-stepper" aria-label="${c}列の枚数">
+            <button type="button" class="count-step" data-delta="-1" aria-label="1枚減らす">−</button>
+            <input class="totalCount" type="number" inputmode="numeric" min="0" max="10" step="1" value="${total}" aria-label="${c}列の合計枚数">
+            <button type="button" class="count-step" data-delta="1" aria-label="1枚増やす">＋</button>
+          </div>
+        </div>
+        <div class="control-subtitle">向きの内訳</div>
+        <div class="grid2" style="margin-bottom:12px">
+          <label>縦向き枚数<input class="vCount" type="number" inputmode="numeric" min="0" max="10" step="1" value="${col.v}"></label>
+          <label>横向き枚数<input class="hCount" type="number" inputmode="numeric" min="0" max="10" step="1" value="${col.h}"></label>
+        </div>
+        <div class="control-subtitle">固定する段</div>
+        <div class="grid2">
+          <label><span class="locked-label"><span class="material-symbols-rounded">lock</span>1段目</span><select class="first"><option value="V" ${col.first==='V'?'selected':''}>縦向き</option><option value="H" ${col.first==='H'?'selected':''}>横向き</option></select></label>
+          <label><span class="locked-label"><span class="material-symbols-rounded">lock</span>2段目</span><select class="second"><option value="V" ${col.second==='V'?'selected':''}>縦向き</option><option value="H" ${col.second==='H'?'selected':''}>横向き</option></select></label>
+        </div>`;
+      wrap.appendChild(div);
+    });
+  }
+
+  function refreshColumnBox(c){
+    const box=document.querySelector(`[data-col="${c}"]`); if(!box)return;
+    const col=state.columns[c]; const total=col.v+col.h;
+    const totalInput=box.querySelector('.totalCount');
+    if(totalInput && document.activeElement!==totalInput) totalInput.value=String(total);
+    const counter=box.querySelector('.column-count'); if(counter)counter.textContent=`${total}枚`;
+    const v=box.querySelector('.vCount'); const h=box.querySelector('.hCount');
+    if(v && document.activeElement!==v)v.value=String(col.v);
+    if(h && document.activeElement!==h)h.value=String(col.h);
+    const first=box.querySelector('.first'); const second=box.querySelector('.second');
+    if(first)first.value=col.first;
+    if(second)second.value=col.second;
+  }
+
+  function setColumnTotal(c,requestedTotal){
+    const col=state.columns[c];
+    const target=Math.min(10,Math.max(0,Number.isFinite(Number(requestedTotal))?Math.round(Number(requestedTotal)):0));
+    normalizeSelections(col);
+    let order=Array.isArray(col.order)?col.order.slice():defaultSequence(col);
+
+    if(target<order.length){
+      order=order.slice(0,target);
+    }else if(target>order.length){
+      if(order.length===0 && target>=1)order.push(col.first==='H'?'H':'V');
+      if(order.length===1 && target>=2)order.push(col.second==='H'?'H':'V');
+      while(order.length<target){
+        const fallback=order.length ? order[order.length-1] : (col.first==='H'?'H':'V');
+        order.push(fallback);
+      }
+    }
+
+    col.v=order.filter(x=>x==='V').length;
+    col.h=order.filter(x=>x==='H').length;
+    if(order[0])col.first=order[0];
+    if(order[1])col.second=order[1];
+    col.order=order;
+    return target;
+  }
+
+  function readColumnBox(box){
+    const c=box.dataset.col;
+    state.columns[c].v=Math.max(0,Number(box.querySelector('.vCount').value)||0);
+    state.columns[c].h=Math.max(0,Number(box.querySelector('.hCount').value)||0);
+    state.columns[c].first=box.querySelector('.first').value;
+    state.columns[c].second=box.querySelector('.second').value;
+    state.columns[c].order=null;
+    normalizeSelections(state.columns[c]);
+    return c;
+  }
+
+  function handleColumnControlInput(e){
+    const box=e.target.closest('[data-col]'); if(!box)return;
+    const c=box.dataset.col;
+    if(e.target.matches('.totalCount')){
+      setColumnTotal(c,e.target.value);
+      refreshColumnBox(c);
+      calculate();
+      return;
+    }
+    readColumnBox(box);
+    refreshColumnBox(c);
+    calculate();
+  }
+
+  function handleColumnControlChange(e){
+    const box=e.target.closest('[data-col]'); if(!box)return;
+    const c=box.dataset.col;
+    if(e.target.matches('.totalCount')){
+      setColumnTotal(c,e.target.value);
+    }else{
+      readColumnBox(box);
+    }
+    refreshColumnBox(c);
+    calculate();
+  }
+
+  function handleCountStep(e){
+    const btn=e.target.closest('.count-step'); if(!btn)return;
+    const box=btn.closest('[data-col]'); if(!box)return;
+    const c=box.dataset.col;
+    const current=state.columns[c].v+state.columns[c].h;
+    setColumnTotal(c,current+Number(btn.dataset.delta||0));
+    refreshColumnBox(c);
+    calculate();
+  }
+
+  function svgEl(tag,attrs={}){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e;}
+  function addText(parent,x,y,text,attrs={}){const e=svgEl('text',{x,y,fill:attrs.fill||'#1d1d1f','font-size':attrs.size||13,'font-weight':attrs.weight||600,'text-anchor':attrs.anchor||'middle','dominant-baseline':'middle',...attrs});e.textContent=text;parent.appendChild(e);return e;}
+  function dimH(svg,x1,x2,y,label){
+    const g=svgEl('g',{opacity:.9});
+    g.append(svgEl('line',{x1,y1:y,x2,y2:y,stroke:'#6e6e73','stroke-width':1,'stroke-dasharray':'4 3'}));
+    g.append(svgEl('line',{x1,y1:y-5,x2:x1,y2:y+5,stroke:'#6e6e73','stroke-width':1}));
+    g.append(svgEl('line',{x1:x2,y1:y-5,x2:x2,y2:y+5,stroke:'#6e6e73','stroke-width':1}));
+    svg.appendChild(g); addText(svg,(x1+x2)/2,y-9,label,{size:10,fill:'#525257'});
+  }
+  function dimV(svg,x,y1,y2,label){
+    const g=svgEl('g',{opacity:.9});
+    g.append(svgEl('line',{x1:x,y1,x2:x,y2,stroke:'#6e6e73','stroke-width':1,'stroke-dasharray':'4 3'}));
+    g.append(svgEl('line',{x1:x-5,y1,x2:x+5,y2:y1,stroke:'#6e6e73','stroke-width':1}));
+    g.append(svgEl('line',{x1:x-5,y1:y2,x2:x+5,y2:y2,stroke:'#6e6e73','stroke-width':1}));
+    svg.appendChild(g); addText(svg,x+8,(y1+y2)/2,label,{size:10,anchor:'start',fill:'#525257'});
+  }
+
+  function renderSvg(){
+    const svg=$('#sheetSvg'); svg.innerHTML='';
+    const defs=svgEl('defs');
+    const pat=svgEl('pattern',{id:'grid',width:50,height:50,patternUnits:'userSpaceOnUse'});
+    pat.appendChild(svgEl('path',{d:'M 50 0 L 0 0 0 50',fill:'none',stroke:'#d7dde8','stroke-width':.6,opacity:.75}));defs.appendChild(pat);svg.appendChild(defs);
+    svg.appendChild(svgEl('rect',{x:0,y:0,width:SHEET_W,height:SHEET_H,rx:4,fill:'#fbfcff',stroke:'#9aa9c0','stroke-width':1.4}));
+    svg.appendChild(svgEl('rect',{x:0,y:0,width:SHEET_W,height:SHEET_H,fill:'url(#grid)'}));
+    addText(svg,14,18,`${state.fileName} / ${state.sheetName}`,{size:13,anchor:'start',weight:700,fill:'#1d1d1f'});
+    addText(svg,SHEET_W-14,18,`${SHEET_W} × ${SHEET_H} mm`,{size:10,anchor:'end',weight:500,fill:'#6e6e73'});
+
+    COLS.slice(0,state.columnCount).forEach(c=>{
+      const col=lastResult.columns[c]; if(!col)return;
+      const first=col.cards[0];
+      if(first){
+        const center=first.x+first.w/2;
+        svg.appendChild(svgEl('line',{x1:center,y1:32,x2:center,y2:SHEET_H,stroke:'#b7c1d0','stroke-width':.9,'stroke-dasharray':'5 6'}));
+        addText(svg,center,40,`${c}列`,{size:10,weight:700,fill:'#525257'});
+      }
+
+      col.cards.forEach(card=>{
+        const s=SIZE[card.orientation];
+        const group=svgEl('g',{
+          'data-card-col':card.column,
+          'data-card-index':card.index-1,
+          class:card.locked?'locked-card':'draggable-card'
+        });
+        group.appendChild(svgEl('rect',{x:card.x,y:card.y,width:card.w,height:card.h,rx:5,fill:s.fill,stroke:'#fff','stroke-width':1.4}));
+        group.appendChild(svgEl('rect',{x:card.x,y:card.y+card.h-15,width:card.w,height:15,rx:3,fill:'#fff'}));
+        addText(group,card.x+card.w/2,card.y+card.h/2-8,`${card.index}段目`,{size:11,weight:700,fill:'#fff'});
+        addText(group,card.x+card.w/2,card.y+card.h/2+9,s.label,{size:9,weight:600,fill:'#eef8ff'});
+        if(card.locked){
+          group.appendChild(svgEl('rect',{x:card.x+6,y:card.y+6,width:34,height:16,rx:8,fill:'rgba(255,255,255,.88)'}));
+          addText(group,card.x+23,card.y+14,'固定',{size:8,weight:700,fill:'#525257'});
+        }
+        svg.appendChild(group);
+      });
+
+      if(state.showDims && col.cards.length){
+        const firstCard=col.cards[0];
+        if((state.columnCount===2&&c==='B')||(state.columnCount===3&&c==='C')){
+          dimH(svg,firstCard.x+firstCard.w,SHEET_W,Math.max(60,firstCard.y+30),`${nfmt(SHEET_W-firstCard.x-firstCard.w)}mm`);
+        }else{
+          dimH(svg,0,firstCard.x,Math.max(60,firstCard.y+30),`${nfmt(firstCard.x)}mm`);
+        }
+        if(col.cards.length>=2){
+          const a=col.cards[0],b=col.cards[1];
+          const gx=Math.min(SHEET_W-24,Math.max(a.x+a.w,b.x+b.w)+14);
+          dimV(svg,gx,a.y+a.h,b.y,`${nfmt(col.gap)}mm`);
+        }
+      }
+    });
+
+    if(lastResult.total===0) addText(svg,SHEET_W/2,SHEET_H/2,'枚数を入力してください',{size:17,fill:'#8e8e93'});
+    if(dragState && dragState.targetIndex!=null) renderDropIndicator(svg,dragState.col,dragState.targetIndex);
+  }
+
+  function renderDropIndicator(svg,colName,targetIndex){
+    const col=lastResult.columns[colName]; if(!col || targetIndex<2 || !col.cards[targetIndex])return;
+    const card=col.cards[targetIndex];
+    const x1=Math.max(0,card.columnCenter-90),x2=Math.min(SHEET_W,card.columnCenter+90);
+    svg.appendChild(svgEl('line',{x1,y1:card.y-8,x2,y2:card.y-8,stroke:'#0071e3','stroke-width':4,'stroke-linecap':'round'}));
+  }
+
+  function renderInfo(){
+    const active=COLS.slice(0,state.columnCount);
+    $('#gapList').innerHTML=active.map(c=>{
+      const r=lastResult.columns[c];
+      const seq=r.sequence.map(o=>SIZE[o].label).join('・')||'—';
+      return `<div class="gap-row"><span class="col">${c}</span><span class="sequence">${esc(seq)}</span><span class="gap">${r.sequence.length<=1?'—':nfmt(r.gap)+' mm'}</span></div>`;
+    }).join('');
+
+    const warnings=[];
+    active.forEach(c=>{const r=lastResult.columns[c];if(!r.fit)warnings.push(`${c}列が配置領域を超えています。`);});
+    const wb=$('#warningBox');
+    if(warnings.length){wb.classList.add('show');wb.innerHTML=warnings.map(esc).join('<br>');}else{wb.classList.remove('show');wb.textContent='';}
+  }
+
+  function renderStatus(){
+    $('#workspaceName').textContent=`${state.fileName} / ${state.sheetName}`;
+    $('#statusCols').textContent=`${state.columnCount}列`;
+    $('#statusTotal').textContent=`${lastResult.total}枚`;
+    $('#totalChip').classList.toggle('warn',lastResult.total!==10);
+    $('#totalChip').classList.toggle('ok',lastResult.total===10);
+    $('#statusFit').textContent=lastResult.fit?'配置可能':'要修正';
+    $('#fitChip').classList.toggle('ok',lastResult.fit);
+    $('#fitChip').classList.toggle('warn',!lastResult.fit);
+    const folder=getCurrentFolder();
+    $('#headerPath').innerHTML=`<b>${esc(folder.name)}</b> / ${esc(state.fileName)} / ${esc(state.sheetName)}`;
+  }
+
+  function renderAll(){renderSvg();renderInfo();renderStatus();}
+
+  function beginDrag(e){
+    const cardEl=e.target.closest('[data-card-col]'); if(!cardEl)return;
+    const index=Number(cardEl.dataset.cardIndex); if(index<2)return;
+    e.preventDefault();
+    const svg=$('#sheetSvg');
+    dragState={col:cardEl.dataset.cardCol,fromIndex:index,targetIndex:index,pointerId:e.pointerId};
+    cardEl.classList.add('dragging-card');
+    try{svg.setPointerCapture(e.pointerId);}catch(_e){}
+    renderSvg();
+  }
+
+  function moveDrag(e){
+    if(!dragState || e.pointerId!==dragState.pointerId)return;
+    e.preventDefault();
+    const svg=$('#sheetSvg'); const rect=svg.getBoundingClientRect();
+    const y=(e.clientY-rect.top)*(SHEET_H/rect.height);
+    const cards=lastResult.columns[dragState.col]?.cards||[];
+    let best=dragState.fromIndex,bestDist=Infinity;
+    cards.forEach((card,i)=>{
+      if(i<2)return;
+      const center=card.y+card.h/2; const d=Math.abs(y-center);
+      if(d<bestDist){bestDist=d;best=i;}
+    });
+    if(best!==dragState.targetIndex){dragState.targetIndex=best;renderSvg();}
+  }
+
+  function endDrag(e){
+    if(!dragState || e.pointerId!==dragState.pointerId)return;
+    e.preventDefault();
+    const {col,fromIndex,targetIndex}=dragState; dragState=null;
+    if(targetIndex>=2 && fromIndex!==targetIndex){
+      const order=state.columns[col].order.slice();
+      const [moved]=order.splice(fromIndex,1); order.splice(targetIndex,0,moved);
+      state.columns[col].order=order;
+      calculate();
+      toast(`${col}列を並べ替え、余白を再計算しました`);
+    }else renderSvg();
+  }
+
+  function renderFolderSelect(){
+    const select=$('#folderSelect');
+    select.innerHTML=library.folders.map(f=>`<option value="${esc(f.id)}" ${f.id===currentFolderId?'selected':''}>${esc(f.name)}</option>`).join('');
+  }
+
+  function renderSavedList(){
+    const wrap=$('#savedList'); const folder=getCurrentFolder();
+    if(!folder.sheets.length){wrap.innerHTML='<div class="empty">このフォルダにはまだシートがありません。</div>';return;}
+    wrap.innerHTML='';
+    folder.sheets.slice().sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach(item=>{
+      const d=document.createElement('div');d.className='saved-sheet';
+      const date=item.updatedAt?new Date(item.updatedAt).toLocaleString('ja-JP',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+      d.innerHTML=`<div><div class="name">${esc(item.fileName)} / ${esc(item.sheetName)}</div><div class="meta">${esc(date)}</div></div><div class="tools"><button class="button icon-only secondary open" title="開く"><span class="material-symbols-rounded">folder_open</span></button><button class="button icon-only secondary rename" title="名前を変更"><span class="material-symbols-rounded">edit</span></button><button class="button icon-only secondary danger delete" title="削除"><span class="material-symbols-rounded">delete</span></button></div>`;
+      d.querySelector('.open').onclick=()=>openSavedSheet(item.id);
+      d.querySelector('.rename').onclick=()=>renameSavedSheet(item.id);
+      d.querySelector('.delete').onclick=()=>deleteSavedSheet(item.id);
+      wrap.appendChild(d);
+    });
+  }
+
+  function renderSettings(){renderFolderSelect();renderSavedList();$('#showDims').checked=state.showDims!==false;}
+
+  function openSettings(){renderSettings();$('#settingsModal').classList.add('show');$('#settingsModal').setAttribute('aria-hidden','false');}
+  function closeSettings(){syncStateFromUI();$('#settingsModal').classList.remove('show');$('#settingsModal').setAttribute('aria-hidden','true');calculate();}
+
+  function newFolder(){
+    const name=prompt('新しいフォルダ名を入力してください。','新しいフォルダ'); if(!name||!name.trim())return;
+    const folder={id:uid('folder'),name:name.trim(),sheets:[]};library.folders.push(folder);currentFolderId=folder.id;currentSheetId=null;persistLibrary();renderSettings();renderStatus();toast('フォルダを作成しました');
+  }
+
+  function renameFolder(){
+    const folder=getCurrentFolder(); const name=prompt('フォルダ名を変更します。',folder.name); if(!name||!name.trim())return;
+    folder.name=name.trim();persistLibrary();renderSettings();renderStatus();toast('フォルダ名を変更しました');
+  }
+
+  function saveCurrent(){
+    calculate(); const folder=getCurrentFolder(); let item=currentSheetId?folder.sheets.find(s=>s.id===currentSheetId):null;
+    if(!item){item={id:uid('sheet')};folder.sheets.push(item);currentSheetId=item.id;}
+    item.fileName=state.fileName; item.sheetName=state.sheetName; item.updatedAt=new Date().toISOString(); item.state=clone(state);
+    persistLibrary();renderSavedList();toast('現在のシートを保存しました');
+  }
+
+  function openSavedSheet(id){
+    const item=getCurrentFolder().sheets.find(s=>s.id===id);if(!item)return;
+    const loaded=normalizeImportedState(item.state);Object.assign(state,loaded);state.columns=clone(loaded.columns);currentSheetId=id;syncUIFromState();calculate();closeSettings();toast('シートを開きました');
+  }
+
+  function renameSavedSheet(id){
+    const item=getCurrentFolder().sheets.find(s=>s.id===id);if(!item)return;
+    const fileName=prompt('ファイル名を変更します。',item.fileName);if(fileName===null)return;
+    const sheetName=prompt('シート名を変更します。',item.sheetName);if(sheetName===null)return;
+    item.fileName=fileName.trim()||'名称未設定';item.sheetName=sheetName.trim()||'シート';item.state=normalizeImportedState(item.state);item.state.fileName=item.fileName;item.state.sheetName=item.sheetName;item.updatedAt=new Date().toISOString();
+    if(currentSheetId===id){state.fileName=item.fileName;state.sheetName=item.sheetName;syncUIFromState();calculate();}
+    persistLibrary();renderSavedList();toast('名前を変更しました');
+  }
+
+  function deleteSavedSheet(id){
+    const folder=getCurrentFolder(); const item=folder.sheets.find(s=>s.id===id);if(!item)return;
+    if(!confirm(`「${item.fileName} / ${item.sheetName}」を削除しますか？`))return;
+    folder.sheets=folder.sheets.filter(s=>s.id!==id);if(currentSheetId===id)currentSheetId=null;persistLibrary();renderSavedList();toast('削除しました');
+  }
+
+  function csvEscape(v){const s=String(v??'');return /[",\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;}
+  function safeName(s){return String(s||'hagaking').replace(/[\\/:*?"<>|]/g,'_').trim()||'hagaking';}
+  function exportAllCSV(){
+    calculate();
+    const rows=[['recordType','version','folderId','folderName','sheetId','fileName','sheetName','isCurrent','stateJson']];
+    rows.push(['meta','3',currentFolderId,'',currentSheetId||'',state.fileName,state.sheetName,'1',JSON.stringify(state)]);
+    library.folders.forEach(folder=>{
+      rows.push(['folder','3',folder.id,folder.name,'','','','','']);
+      folder.sheets.forEach(item=>rows.push(['sheet','3',folder.id,folder.name,item.id,item.fileName,item.sheetName,item.id===currentSheetId?'1':'0',JSON.stringify(item.state)]));
+    });
+    const csv='\uFEFF'+rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;
+    const today=new Date().toISOString().slice(0,10);a.download=`${safeName('ハガキング_全体設定_'+today)}.csv`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('全体設定をCSVに書き出しました');
+  }
+
+  function parseCSV(text){
+    const rows=[];let row=[],field='',q=false;
+    for(let i=0;i<text.length;i++){
+      const ch=text[i];
+      if(q){if(ch==='"'&&text[i+1]==='"'){field+='"';i++;}else if(ch==='"')q=false;else field+=ch;}
+      else{if(ch==='"')q=true;else if(ch===','){row.push(field);field='';}else if(ch==='\n'){row.push(field.replace(/\r$/,''));rows.push(row);row=[];field='';}else field+=ch;}
+    }
+    if(field.length||row.length){row.push(field.replace(/\r$/,''));rows.push(row);}return rows;
+  }
+
+  function importAllCSV(file){
+    const reader=new FileReader();reader.onload=()=>{
+      try{
+        const rows=parseCSV(String(reader.result).replace(/^\uFEFF/,''));if(rows.length<2)throw new Error('CSVにデータがありません');
+        const head=rows[0],idx=k=>head.indexOf(k);if(idx('recordType')<0)throw new Error('ハガキング形式のCSVではありません');
+        const version=rows[1][idx('version')];
+        if(version==='3') importV3(rows,head);
+        else importLegacyCSV(rows,head);
+        persistLibrary();syncUIFromState();calculate();renderSettings();toast('CSVから全体設定を復元しました');
+      }catch(e){alert('CSVを読み込めませんでした。\n'+e.message);}
+    };reader.readAsText(file,'utf-8');
+  }
+
+  function importV3(rows,head){
+    const idx=k=>head.indexOf(k);const body=rows.slice(1);const folders=[];
+    body.filter(r=>r[idx('recordType')]==='folder').forEach(r=>folders.push({id:r[idx('folderId')]||uid('folder'),name:r[idx('folderName')]||'保存フォルダ',sheets:[]}));
+    if(!folders.length)folders.push({id:uid('folder'),name:'保存フォルダ',sheets:[]});
+    body.filter(r=>r[idx('recordType')]==='sheet').forEach(r=>{
+      let folder=folders.find(f=>f.id===r[idx('folderId')]);if(!folder){folder={id:r[idx('folderId')]||uid('folder'),name:r[idx('folderName')]||'保存フォルダ',sheets:[]};folders.push(folder);}
+      let sheetState={};try{sheetState=JSON.parse(r[idx('stateJson')]||'{}');}catch(_e){}
+      sheetState=normalizeImportedState(sheetState);folder.sheets.push({id:r[idx('sheetId')]||uid('sheet'),fileName:r[idx('fileName')]||sheetState.fileName,sheetName:r[idx('sheetName')]||sheetState.sheetName,updatedAt:new Date().toISOString(),state:sheetState});
+    });
+    const meta=body.find(r=>r[idx('recordType')]==='meta');
+    library={version:3,folders,currentFolderId:meta?.[idx('folderId')]||folders[0].id};
+    currentFolderId=library.currentFolderId;
+    currentSheetId=meta?.[idx('sheetId')]||null;
+    let currentState=null;try{currentState=JSON.parse(meta?.[idx('stateJson')]||'null');}catch(_e){}
+    if(currentState){const s=normalizeImportedState(currentState);Object.assign(state,s);state.columns=clone(s.columns);}else if(currentSheetId){const item=getCurrentFolder().sheets.find(s=>s.id===currentSheetId);if(item){const s=normalizeImportedState(item.state);Object.assign(state,s);state.columns=clone(s.columns);}}
+  }
+
+  function importLegacyCSV(rows,head){
+    const idx=k=>head.indexOf(k);if(idx('column')<0)throw new Error('対応していないCSV形式です');
+    const settingsRows=rows.slice(1).filter(r=>r[idx('recordType')]==='settings');if(!settingsRows.length)throw new Error('settings行が見つかりません');
+    const first=settingsRows[0];
+    state.fileName=(idx('fileName')>=0?first[idx('fileName')]:first[idx('municipality')])||'名称未設定';
+    state.sheetName=first[idx('sheetName')]||'シート';state.columnCount=Math.min(3,Math.max(1,Number(first[idx('columnCount')])||1));
+    settingsRows.forEach(r=>{const c=r[idx('column')];if(!COLS.includes(c))return;state.columns[c]={v:Number(r[idx('verticalCount')])||0,h:Number(r[idx('horizontalCount')])||0,first:r[idx('first')]==='H'?'H':'V',second:r[idx('second')]==='H'?'H':'V',order:null};normalizeSelections(state.columns[c]);});
+    const fresh=defaultLibrary();fresh.folders[0].sheets=[];library=fresh;currentFolderId=fresh.currentFolderId;currentSheetId=null;
+  }
+
+  $('#columnControls').addEventListener('change',handleColumnControlChange);
+  $('#columnControls').addEventListener('input',e=>{if(e.target.matches('input'))handleColumnControlInput(e);});
+  $('#columnControls').addEventListener('click',handleCountStep);
+  $('#columnCount').addEventListener('change',()=>{state.columnCount=Number($('#columnCount').value);renderColumnControls();calculate();});
+  $('#fileName').addEventListener('input',calculate);
+  $('#sheetName').addEventListener('input',calculate);
+  $('#showDims').addEventListener('change',()=>{state.showDims=$('#showDims').checked;calculate();});
+
+  $('#sheetSvg').addEventListener('pointerdown',beginDrag);
+  $('#sheetSvg').addEventListener('pointermove',moveDrag);
+  $('#sheetSvg').addEventListener('pointerup',endDrag);
+  $('#sheetSvg').addEventListener('pointercancel',endDrag);
+
+  $('#settingsBtn').addEventListener('click',openSettings);
+  $('#closeSettingsBtn').addEventListener('click',closeSettings);
+  $('#settingsModal').addEventListener('click',e=>{if(e.target===$('#settingsModal'))closeSettings();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#settingsModal').classList.contains('show'))closeSettings();});
+  $('#folderSelect').addEventListener('change',()=>{currentFolderId=$('#folderSelect').value;currentSheetId=null;persistLibrary();renderSettings();renderStatus();});
+  $('#newFolderBtn').addEventListener('click',newFolder);
+  $('#renameFolderBtn').addEventListener('click',renameFolder);
+  $('#saveCurrentBtn').addEventListener('click',saveCurrent);
+  $('#exportAllBtn').addEventListener('click',exportAllCSV);
+  $('#importAllBtn').addEventListener('click',()=>$('#fileInput').click());
+  $('#fileInput').addEventListener('change',e=>{if(e.target.files[0])importAllCSV(e.target.files[0]);e.target.value='';});
+  $('#printBtn').addEventListener('click',()=>window.print());
+
+  // すべての定義・イベント登録が完了してから初期状態を読み込む。
+  library = loadLibrary();
+  currentFolderId = library.currentFolderId || library.folders[0].id;
+  syncUIFromState();
+  calculate();
+  renderSettings();
+  document.documentElement.dataset.hagakingReady = 'true';
+})();
+</script>
+</body>
+</html>
